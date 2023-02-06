@@ -53,3 +53,33 @@ def user_get(request, username):
         return Response(serializer.data)
     else:
         return Response({'Error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['PATCH'])
+def user_password_update(request):
+    data = request.data
+
+    user = User.objects.get(email=data['email'])
+
+    password_checked = check_password(data['password'], user.password)
+
+    if user and password_checked:
+        new_password_hashed = make_password(data['new_password'])
+        User.objects.update(password=new_password_hashed)
+
+        return Response({'Message': 'Password updated successfully'}, status=status.HTTP_204_NO_CONTENT)
+    else:
+        return Response({'Error': 'Email or password is incorrect'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['DELETE'])
+def user_delete(request):
+    data = request.data
+
+    user = User.objects.get(email=data['email'])
+    password_checked = check_password(data['password'], user.password)
+
+    if user and password_checked:
+        user.delete()
+
+        return Response({'Message': 'User deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+    else:
+        return Response({'Error': 'Email or password is incorrect'}, status=status.HTTP_404_NOT_FOUND)
